@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hi-Lo Dice Game</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .dice-container { display: flex; justify-content: center; margin: 20px; }
+        .dice { font-size: 50px; margin: 10px; }
+        .result-text { font-size: 24px; font-weight: bold; margin-top: 10px; }
+        .refill-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            background-color: gray;
+            color: white;
+            cursor: not-allowed;
+            transition: background-color 0.3s ease-in-out;
+        }
+        .refill-btn.active {
+            cursor: pointer;
+            animation: highlight 1s infinite alternate;
+        }
+        @keyframes highlight {
+            from { background-color: #403301; }
+            to { background-color: #efbf04; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Hi-Lo Dice Game</h1>
+    <p>Balance: $<span id="balance">100</span></p>
+    <input type="number" id="betAmount" placeholder="Enter Bet" min="1">
+    <button onclick="placeBet('high')">Bet High</button>
+    <button onclick="placeBet('mid')">Bet Mid</button>
+    <button onclick="placeBet('low')">Bet Low</button>
+    <p id="message"></p>
+    <div class="dice-container">
+        <span class="dice" id="dice1">🎲</span>
+        <span class="dice" id="dice2">🎲</span>
+        <span class="dice" id="dice3">🎲</span>
+    </div>
+    <p class="result-text" id="resultText"></p>
+    <button id="refillButton" class="refill-btn" onclick="refillBalance()" disabled>
+        <img src="528281.png" alt="Refill" width="20"> Refill $100
+    </button>
+    <script>
+        let balance = 100;
+        let currentBet = 0;
+        let currentChoice = "";
+        const diceFaces = ["", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
+        const refillButton = document.getElementById("refillButton");
+        const resultText = document.getElementById("resultText");
+        
+        function rollDice() {
+            const dice1 = Math.floor(Math.random() * 6) + 1;
+            const dice2 = Math.floor(Math.random() * 6) + 1;
+            const dice3 = Math.floor(Math.random() * 6) + 1;
+            document.getElementById("dice1").textContent = diceFaces[dice1];
+            document.getElementById("dice2").textContent = diceFaces[dice2];
+            document.getElementById("dice3").textContent = diceFaces[dice3];
+            
+            const sum = dice1 + dice2 + dice3;
+            checkResult(sum);
+        }
+        
+        function placeBet(choice) {
+            const betInput = document.getElementById("betAmount");
+            currentBet = parseInt(betInput.value);
+            if (isNaN(currentBet) || currentBet <= 0 || currentBet > balance) {
+                document.getElementById("message").textContent = "Invalid bet amount.";
+                return;
+            }
+            currentChoice = choice;
+            balance -= currentBet;
+            document.getElementById("balance").textContent = balance;
+            updateRefillButton();
+            rollDice();
+        }
+        
+        function checkResult(sum) {
+            let winnings = 0;
+            let result = "";
+            if (sum >= 12) {
+                result = "High";
+            } else if (sum === 11) {
+                result = "Mid";
+            } else {
+                result = "Low";
+            }
+            resultText.textContent = result;
+            
+            if (currentChoice === "high" && sum >= 12) {
+                winnings = currentBet * 2;
+            } else if (currentChoice === "mid" && sum === 11) {
+                winnings = currentBet * 5;
+            } else if (currentChoice === "low" && sum <= 10) {
+                winnings = currentBet * 2;
+            }
+            
+            if (winnings > 0) {
+                document.getElementById("message").textContent = `You won $${winnings}!`;
+                balance += winnings;
+            } else {
+                document.getElementById("message").textContent = "You lost! Try again.";
+            }
+            document.getElementById("balance").textContent = balance;
+            updateRefillButton();
+        }
+        
+        function refillBalance() {
+            if (balance <= 10) {
+                balance = 100;
+                document.getElementById("balance").textContent = balance;
+                updateRefillButton();
+            }
+        }
+        
+        function updateRefillButton() {
+            if (balance <= 10) {
+                refillButton.classList.add("active");
+                refillButton.disabled = false;
+            } else {
+                refillButton.classList.remove("active");
+                refillButton.disabled = true;
+            }
+        }
+    </script>
+</body>
+</html>
